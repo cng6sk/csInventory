@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+  <mirrors>
+    <mirror>
+      <id>aliyunmaven</id>
+      <name>Aliyun Maven</name>
+      <url>https://maven.aliyun.com/repository/public</url>
+      <mirrorOf>central</mirrorOf>
+    </mirror>
+    <mirror>
+      <id>tencent</id>
+      <name>Tencent Cloud Maven</name>
+      <url>https://mirrors.cloud.tencent.com/nexus/repository/maven-public/</url>
+      <mirrorOf>central</mirrorOf>
+    </mirror>
+  </mirrors>
+  <profiles>
+    <profile>
+      <id>default</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+        <maven.wagon.http.pool>false</maven.wagon.http.pool>
+        <maven.wagon.http.retryHandler.count>3</maven.wagon.http.retryHandler.count>
+        <maven.wagon.httpconnectionManager.ttlSeconds>30</maven.wagon.httpconnectionManager.ttlSeconds>
+        <maven.wagon.http.timeout>60000</maven.wagon.http.timeout>
+        <maven.wagon.http.socketTimeout>60000</maven.wagon.http.socketTimeout>
+      </properties>
+      <repositories>
+        <repository>
+          <id>central</id>
+          <name>Central</name>
+          <url>https://repo.maven.apache.org/maven2</url>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+        </repository>
+      </repositories>
+      <pluginRepositories>
+        <pluginRepository>
+          <id>central</id>
+          <name>Central</name>
+          <url>https://repo.maven.apache.org/maven2</url>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+        </pluginRepository>
+      </pluginRepositories>
+    </profile>
+  </profiles>
+</settings> 

@@ -1,0 +1,23 @@
+server:
+  port: 9090
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:33078/cs_inventory?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&useUnicode=true&characterEncoding=UTF-8
+    username: csuser
+    password: cspass
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update   # 开发期让 JPA 自动建表；改为 validate 后可配合 Flyway 管理
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc.time_zone: UTC
+  jackson:
+    time-zone: UTC
+logging:
+  level:
+    org.hibernate.SQL: warn
