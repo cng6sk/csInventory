@@ -68,26 +68,27 @@ export function InventoryList() {
         gap: '12px', 
         marginBottom: '20px',
         padding: '12px',
-        backgroundColor: '#f0f8ff',
-        borderRadius: '4px'
+        backgroundColor: 'rgba(33, 150, 243, 0.1)',
+        borderRadius: '4px',
+        border: '1px solid rgba(33, 150, 243, 0.2)'
       }}>
         <div>
-          <div style={{ fontSize: '0.9em', color: '#666' }}>总物品种类</div>
-          <div style={{ fontSize: '1.2em', fontWeight: 'bold' }}>{inventory.length}</div>
+          <div style={{ fontSize: '0.9em', color: 'var(--muted)' }}>总物品种类</div>
+          <div style={{ fontSize: '1.2em', fontWeight: 'bold', color: 'var(--text)' }}>{inventory.length}</div>
         </div>
         <div>
-          <div style={{ fontSize: '0.9em', color: '#666' }}>有库存物品</div>
-          <div style={{ fontSize: '1.2em', fontWeight: 'bold' }}>{activeItems.length}</div>
+          <div style={{ fontSize: '0.9em', color: 'var(--muted)' }}>有库存物品</div>
+          <div style={{ fontSize: '1.2em', fontWeight: 'bold', color: 'var(--text)' }}>{activeItems.length}</div>
         </div>
         <div>
-          <div style={{ fontSize: '0.9em', color: '#666' }}>总库存数量</div>
-          <div style={{ fontSize: '1.2em', fontWeight: 'bold' }}>
+          <div style={{ fontSize: '0.9em', color: 'var(--muted)' }}>总库存数量</div>
+          <div style={{ fontSize: '1.2em', fontWeight: 'bold', color: 'var(--text)' }}>
             {inventory.reduce((sum, item) => sum + item.currentQuantity, 0)}
           </div>
         </div>
         <div>
-          <div style={{ fontSize: '0.9em', color: '#666' }}>总投入成本</div>
-          <div style={{ fontSize: '1.2em', fontWeight: 'bold', color: '#2196F3' }}>
+          <div style={{ fontSize: '0.9em', color: 'var(--muted)' }}>总投入成本</div>
+          <div style={{ fontSize: '1.2em', fontWeight: 'bold', color: '#42a5f5' }}>
             {formatPrice(totalInventoryValue.toFixed(4))}
           </div>
         </div>
@@ -98,7 +99,7 @@ export function InventoryList() {
         <table className="table" style={{ minWidth: '800px' }}>
           <thead>
             <tr>
-              <th>物品ID</th>
+              <th>物品名称</th>
               <th className="text-right">当前数量</th>
               <th className="text-right">加权平均成本</th>
               <th className="text-right">总投入成本</th>
@@ -110,12 +111,26 @@ export function InventoryList() {
           <tbody>
             {inventory.map((item) => (
               <tr key={item.nameId} style={{ 
-                backgroundColor: item.currentQuantity === 0 ? '#f5f5f5' : 'transparent'
+                backgroundColor: item.currentQuantity === 0 ? 'rgba(255,255,255,0.04)' : 'transparent'
               }}>
-                <td>{item.nameId}</td>
+                <td>
+                  <div style={{ maxWidth: '250px' }}>
+                    <div style={{ fontWeight: 'bold', color: 'var(--text)' }}>
+                      {item.cnName || `ID: ${item.nameId}`}
+                    </div>
+                    {item.enName && (
+                      <div style={{ fontSize: '0.8em', color: 'var(--muted)', marginTop: '2px' }}>
+                        {item.enName}
+                      </div>
+                    )}
+                    <div style={{ fontSize: '0.75em', color: 'var(--muted)', marginTop: '1px' }}>
+                      ID: {item.nameId}
+                    </div>
+                  </div>
+                </td>
                 <td className="text-right">
                   <span style={{ 
-                    color: item.currentQuantity > 0 ? '#4CAF50' : '#999',
+                    color: item.currentQuantity > 0 ? '#66bb6a' : 'var(--muted)',
                     fontWeight: 'bold'
                   }}>
                     {item.currentQuantity}
@@ -128,7 +143,7 @@ export function InventoryList() {
                   {formatPrice(item.totalInvestmentCost)}
                 </td>
                 <td className="text-right">
-                  <span style={{ color: '#2196F3', fontWeight: 'bold' }}>
+                  <span style={{ color: '#42a5f5', fontWeight: 'bold' }}>
                     {formatPrice((parseFloat(item.weightedAverageCost) * item.currentQuantity).toFixed(4))}
                   </span>
                 </td>
@@ -146,7 +161,7 @@ export function InventoryList() {
             ))}
             {!loading && inventory.length === 0 && (
               <tr>
-                <td colSpan={7} style={{ padding: '16px', textAlign: 'center', color: '#666' }}>
+                <td colSpan={7} style={{ padding: '16px', textAlign: 'center', color: 'var(--muted)' }}>
                   暂无库存数据
                 </td>
               </tr>
@@ -170,7 +185,8 @@ export function InventoryList() {
           zIndex: 1000
         }}>
           <div style={{
-            backgroundColor: 'white',
+            backgroundColor: 'var(--bg-elev)',
+            border: '1px solid var(--card-border)',
             padding: '20px',
             borderRadius: '8px',
             maxWidth: '500px',
@@ -178,15 +194,28 @@ export function InventoryList() {
             maxHeight: '80vh',
             overflow: 'auto'
           }}>
-            <h4>库存详情</h4>
-            <div style={{ display: 'grid', gap: '12px' }}>
+            <h4 style={{ color: 'var(--text)' }}>库存详情</h4>
+            <div style={{ display: 'grid', gap: '12px', color: 'var(--text)' }}>
               <div>
-                <strong>物品ID:</strong> {selectedInventory.nameId}
+                <strong>物品名称:</strong> 
+                <div style={{ marginTop: '4px' }}>
+                  <div style={{ fontSize: '1.1em', fontWeight: 'bold', color: 'var(--primary)' }}>
+                    {selectedInventory.cnName || `ID: ${selectedInventory.nameId}`}
+                  </div>
+                  {selectedInventory.enName && (
+                    <div style={{ fontSize: '0.9em', color: 'var(--muted)', marginTop: '2px' }}>
+                      {selectedInventory.enName}
+                    </div>
+                  )}
+                  <div style={{ fontSize: '0.8em', color: 'var(--muted)', marginTop: '2px' }}>
+                    物品ID: {selectedInventory.nameId}
+                  </div>
+                </div>
               </div>
               <div>
                 <strong>当前数量:</strong> 
                 <span style={{ 
-                  color: selectedInventory.currentQuantity > 0 ? '#4CAF50' : '#f44336',
+                  color: selectedInventory.currentQuantity > 0 ? '#66bb6a' : '#ef5350',
                   fontWeight: 'bold',
                   marginLeft: '8px'
                 }}>
@@ -201,7 +230,7 @@ export function InventoryList() {
               </div>
               <div>
                 <strong>当前价值:</strong> 
-                <span style={{ color: '#2196F3', fontWeight: 'bold', marginLeft: '8px' }}>
+                <span style={{ color: '#42a5f5', fontWeight: 'bold', marginLeft: '8px' }}>
                   {formatPrice((parseFloat(selectedInventory.weightedAverageCost) * selectedInventory.currentQuantity).toFixed(4))}
                 </span>
               </div>

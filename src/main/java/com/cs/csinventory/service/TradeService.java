@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.List;
+import com.cs.csinventory.service.dto.TradeWithItemDTO;
 
 @Service
 @RequiredArgsConstructor
@@ -80,11 +81,35 @@ public class TradeService {
     }
 
     /**
+     * 获取所有交易记录
+     */
+    @Transactional(readOnly = true)
+    public List<Trade> getAllTrades() {
+        return tradeRepository.findAll();
+    }
+    
+    /**
+     * 获取所有交易记录并包含物品信息
+     */
+    @Transactional(readOnly = true)
+    public List<TradeWithItemDTO> getAllTradesWithItem() {
+        return tradeRepository.findAllTradesWithItem();
+    }
+
+    /**
      * 获取指定物品的交易历史
      */
     @Transactional(readOnly = true)
     public List<Trade> getTradeHistory(Long nameId) {
         return tradeRepository.findByNameId(nameId);
+    }
+    
+    /**
+     * 获取指定物品的交易历史并包含物品信息
+     */
+    @Transactional(readOnly = true)
+    public List<TradeWithItemDTO> getTradeHistoryWithItem(Long nameId) {
+        return tradeRepository.findTradeHistoryWithItem(nameId);
     }
 
     /**
@@ -93,6 +118,14 @@ public class TradeService {
     @Transactional(readOnly = true)
     public List<Trade> getTradesByDateRange(OffsetDateTime start, OffsetDateTime end) {
         return tradeRepository.findByCreatedAtBetween(start, end);
+    }
+    
+    /**
+     * 获取指定时间范围的交易记录并包含物品信息
+     */
+    @Transactional(readOnly = true)
+    public List<TradeWithItemDTO> getTradesByDateRangeWithItem(OffsetDateTime start, OffsetDateTime end) {
+        return tradeRepository.findTradesByDateRangeWithItem(start, end);
     }
 
     /**
@@ -117,13 +150,5 @@ public class TradeService {
                     .tradeCount(tradeCount.intValue())
                     .build();
         }).toList();
-    }
-
-    /**
-     * 获取所有交易记录
-     */
-    @Transactional(readOnly = true)
-    public List<Trade> getAllTrades() {
-        return tradeRepository.findAll();
     }
 }

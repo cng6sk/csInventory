@@ -124,7 +124,7 @@ export function TradeHistory() {
           <thead>
             <tr>
               <th>交易ID</th>
-              <th>物品ID</th>
+              <th>物品名称</th>
               <th>类型</th>
               <th className="text-right">单价</th>
               <th className="text-right">数量</th>
@@ -136,7 +136,18 @@ export function TradeHistory() {
             {filteredTrades.map((trade) => (
               <tr key={trade.id}>
                 <td>{trade.id}</td>
-                <td>{trade.nameId}</td>
+                <td>
+                  <div style={{ maxWidth: '200px' }}>
+                    <div style={{ fontWeight: 'bold', color: 'var(--text)' }}>
+                      {trade.cnName || `ID: ${trade.nameId}`}
+                    </div>
+                    {trade.enName && (
+                      <div style={{ fontSize: '0.8em', color: 'var(--muted)', marginTop: '2px' }}>
+                        {trade.enName}
+                      </div>
+                    )}
+                  </div>
+                </td>
                 <td>
                   <span 
                     style={{ 
@@ -157,7 +168,7 @@ export function TradeHistory() {
             ))}
             {!loading && filteredTrades.length === 0 && (
               <tr>
-                <td colSpan={7} style={{ padding: '16px', textAlign: 'center', color: '#666' }}>
+                <td colSpan={7} style={{ padding: '16px', textAlign: 'center', color: 'var(--muted)' }}>
                   暂无交易记录
                 </td>
               </tr>
@@ -168,9 +179,9 @@ export function TradeHistory() {
 
       {/* 统计信息 */}
       {filteredTrades.length > 0 && (
-        <div style={{ marginTop: '16px', padding: '12px', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
-          <h4 style={{ margin: '0 0 8px 0' }}>统计信息</h4>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '8px' }}>
+        <div style={{ marginTop: '16px', padding: '12px', backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: '4px' }}>
+          <h4 style={{ margin: '0 0 8px 0', color: 'var(--text)' }}>统计信息</h4>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '8px', color: 'var(--text)' }}>
             <div>总交易数: {filteredTrades.length}</div>
             <div>买入次数: {filteredTrades.filter(t => t.type === 'BUY').length}</div>
             <div>卖出次数: {filteredTrades.filter(t => t.type === 'SELL').length}</div>

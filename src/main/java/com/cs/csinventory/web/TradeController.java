@@ -7,6 +7,8 @@ import com.cs.csinventory.service.InventoryService;
 import com.cs.csinventory.service.ItemService;
 import com.cs.csinventory.service.TradeService;
 import com.cs.csinventory.service.dto.DailyFlowDTO;
+import com.cs.csinventory.service.dto.TradeWithItemDTO;
+import com.cs.csinventory.service.dto.InventoryWithItemDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
@@ -33,6 +35,17 @@ public class TradeController {
     @GetMapping("/items")
     public List<Item> getAllItems() {
         return itemService.getAllItems();
+    }
+    
+    // 新增：搜索物品接口
+    @GetMapping("/items/search")
+    public List<Item> searchItems(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "15") int limit
+    ) {
+        // 限制最大返回数量，避免性能问题
+        int actualLimit = Math.min(limit, 50);
+        return itemService.searchItems(keyword, actualLimit);
     }
     
     @PostMapping("/items")
@@ -91,33 +104,33 @@ public class TradeController {
     }
 
     @GetMapping("/trades")
-    public List<Trade> getAllTrades() {
-        return tradeService.getAllTrades();
+    public List<TradeWithItemDTO> getAllTrades() {
+        return tradeService.getAllTradesWithItem();
     }
 
     @GetMapping("/trades/history/{nameId}")
-    public List<Trade> getTradeHistory(@PathVariable Long nameId) {
-        return tradeService.getTradeHistory(nameId);
+    public List<TradeWithItemDTO> getTradeHistory(@PathVariable Long nameId) {
+        return tradeService.getTradeHistoryWithItem(nameId);
     }
 
     @GetMapping("/trades/date-range")
-    public List<Trade> getTradesByDateRange(
+    public List<TradeWithItemDTO> getTradesByDateRange(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime start,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime end
     ) {
-        return tradeService.getTradesByDateRange(start, end);
+        return tradeService.getTradesByDateRangeWithItem(start, end);
     }
 
     // ==================== 库存管理接口 ====================
 
     @GetMapping("/inventory")
-    public List<Inventory> getAllInventory() {
-        return inventoryService.getAllInventory();
+    public List<InventoryWithItemDTO> getAllInventory() {
+        return inventoryService.getAllInventoryWithItem();
     }
 
     @GetMapping("/inventory/{nameId}")
-    public Inventory getInventoryByNameId(@PathVariable Long nameId) {
-        return inventoryService.getInventoryByNameId(nameId)
+    public InventoryWithItemDTO getInventoryByNameId(@PathVariable Long nameId) {
+        return inventoryService.getInventoryWithItemByNameId(nameId)
                 .orElse(null);
     }
 

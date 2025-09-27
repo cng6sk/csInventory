@@ -30,6 +30,17 @@ public class ItemService {
         return itemRepository.findAll();
     }
     
+    // 新增：搜索物品方法
+    public List<Item> searchItems(String keyword, int limit) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            // 如果没有关键词，返回前15个物品
+            return itemRepository.findAll().stream()
+                    .limit(limit)
+                    .toList();
+        }
+        return itemRepository.findByCnNameContainingIgnoreCaseOrderByCnName(keyword.trim(), limit);
+    }
+    
     @Transactional
     public Item createItem(Item item) {
         return itemRepository.save(item);

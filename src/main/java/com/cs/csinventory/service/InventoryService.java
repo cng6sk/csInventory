@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 import java.util.Optional;
+import com.cs.csinventory.service.dto.InventoryWithItemDTO;
 
 @Service
 @RequiredArgsConstructor
@@ -21,17 +22,35 @@ public class InventoryService {
     private final InventoryRepository inventoryRepository;
 
     /**
-     * 获取指定物品的库存信息
+     * 获取所有库存记录
      */
-    public Optional<Inventory> getInventoryByNameId(Long nameId) {
-        return inventoryRepository.findByNameId(nameId);
+    @Transactional(readOnly = true)
+    public List<Inventory> getAllInventory() {
+        return inventoryRepository.findAll();
+    }
+    
+    /**
+     * 获取所有库存记录并包含物品信息
+     */
+    @Transactional(readOnly = true)
+    public List<InventoryWithItemDTO> getAllInventoryWithItem() {
+        return inventoryRepository.findAllInventoryWithItem();
     }
 
     /**
-     * 获取所有库存记录
+     * 根据nameId获取库存记录
      */
-    public List<Inventory> getAllInventory() {
-        return inventoryRepository.findAll();
+    @Transactional(readOnly = true)
+    public Optional<Inventory> getInventoryByNameId(Long nameId) {
+        return inventoryRepository.findByNameId(nameId);
+    }
+    
+    /**
+     * 根据nameId获取库存记录并包含物品信息
+     */
+    @Transactional(readOnly = true)
+    public Optional<InventoryWithItemDTO> getInventoryWithItemByNameId(Long nameId) {
+        return inventoryRepository.findInventoryWithItemByNameId(nameId);
     }
 
     /**

@@ -9,6 +9,8 @@ export interface Item {
 export interface Trade {
   id?: number;
   nameId: number;
+  cnName?: string;  // 物品中文名称
+  enName?: string;  // 物品英文名称  
   type: 'BUY' | 'SELL';
   unitPrice: string;  // BigDecimal作为字符串
   quantity: number;
@@ -19,6 +21,8 @@ export interface Trade {
 export interface Inventory {
   id?: number;
   nameId: number;
+  cnName?: string;  // 物品中文名称
+  enName?: string;  // 物品英文名称
   currentQuantity: number;
   weightedAverageCost: string;  // BigDecimal作为字符串
   totalInvestmentCost: string;  // BigDecimal作为字符串
@@ -68,6 +72,15 @@ async function uploadRequest<T>(input: RequestInfo, formData: FormData): Promise
 export const api = {
   // ==================== 物品管理接口 ====================
   getAllItems: () => request<Item[]>('/api/items'),
+  
+  // 新增：搜索物品
+  searchItems: (keyword?: string, limit: number = 15) => {
+    const params = new URLSearchParams();
+    if (keyword) params.append('keyword', keyword);
+    params.append('limit', limit.toString());
+    return request<Item[]>(`/api/items/search?${params}`);
+  },
+
   createItem: (item: Item) => request<Item>('/api/items', {
     method: 'POST',
     body: JSON.stringify(item),

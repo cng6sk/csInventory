@@ -1,6 +1,7 @@
 package com.cs.csinventory.repo;
 
 import com.cs.csinventory.domain.Trade;
+import com.cs.csinventory.service.dto.TradeWithItemDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -42,4 +43,48 @@ public interface TradeRepository extends JpaRepository<Trade, Long> {
         ORDER BY tradeDate DESC, t.type
     """)
     List<Object[]> findDailyTradeSummary(@Param("start") OffsetDateTime start, @Param("end") OffsetDateTime end);
+    
+    /**
+     * 获取所有交易记录并包含物品信息
+     */
+    @Query("""
+        SELECT new com.cs.csinventory.service.dto.TradeWithItemDTO(
+            t.id, t.nameId, i.cnName, i.enName, t.type, 
+            t.unitPrice, t.quantity, t.totalAmount, t.createdAt
+        )
+        FROM Trade t 
+        LEFT JOIN Item i ON t.nameId = i.nameId
+        ORDER BY t.createdAt DESC
+    """)
+    List<TradeWithItemDTO> findAllTradesWithItem();
+    
+    /**
+     * 根据物品nameId查找交易记录并包含物品信息
+     */
+    @Query("""
+        SELECT new com.cs.csinventory.service.dto.TradeWithItemDTO(
+            t.id, t.nameId, i.cnName, i.enName, t.type, 
+            t.unitPrice, t.quantity, t.totalAmount, t.createdAt
+        )
+        FROM Trade t 
+        LEFT JOIN Item i ON t.nameId = i.nameId
+        WHERE t.nameId = :nameId
+        ORDER BY t.createdAt DESC
+    """)
+    List<TradeWithItemDTO> findTradeHistoryWithItem(@Param("nameId") Long nameId);
+    
+    /**
+     * 根据时间范围查找交易记录并包含物品信息
+     */
+    @Query("""
+        SELECT new com.cs.csinventory.service.dto.TradeWithItemDTO(
+            t.id, t.nameId, i.cnName, i.enName, t.type, 
+            t.unitPrice, t.quantity, t.totalAmount, t.createdAt
+        )
+        FROM Trade t 
+        LEFT JOIN Item i ON t.nameId = i.nameId
+        WHERE t.createdAt BETWEEN :start AND :end
+        ORDER BY t.createdAt DESC
+    """)
+    List<TradeWithItemDTO> findTradesByDateRangeWithItem(@Param("start") OffsetDateTime start, @Param("end") OffsetDateTime end);
 }
