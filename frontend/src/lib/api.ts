@@ -50,6 +50,30 @@ export interface SellRequest {
   quantity: number;
 }
 
+export interface InvestmentPoolDTO {
+  // 资金流统计
+  totalInvestment: string;     // 累计投入资金
+  totalWithdrawal: string;     // 累计回收资金
+  currentCost: string;         // 当前持仓成本
+  currentHoldingValue: string; // 当前持仓估值
+  
+  // 收益统计
+  absoluteProfit: string;      // 绝对收益
+  returnRate: string;          // 收益率
+  totalValue: string;          // 总价值
+  
+  // 时间统计
+  firstInvestmentDate: string; // 首次投资日期
+  lastTradeDate: string;       // 最后交易日期
+  totalInvestmentDays: number; // 总投资天数
+  
+  // 交易统计
+  totalBuyTrades: number;      // 总买入笔数
+  totalSellTrades: number;     // 总卖出笔数
+  totalItems: number;          // 总物品种类数
+  currentHoldingItems: number; // 当前持有物品种类数
+}
+
 async function request<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
   const res = await fetch(input, {
     headers: { 'Content-Type': 'application/json' },
@@ -123,4 +147,13 @@ export const api = {
   // ==================== 统计接口 ====================
   dailyStats: (startIso: string, endIso: string) =>
     request<DailyFlowDTO[]>(`/api/stats/daily?start=${encodeURIComponent(startIso)}&end=${encodeURIComponent(endIso)}`),
+  
+  // 投资池统计
+  getInvestmentPoolStats: () => request<InvestmentPoolDTO>('/api/stats/investment-pool'),
+  
+  // 使用手动输入的价值计算投资池统计
+  calculateWithManualValue: (manualValue?: string) => request<InvestmentPoolDTO>('/api/stats/calculate-with-manual-value', {
+    method: 'POST',
+    body: JSON.stringify({ manualValue })
+  }),
 }; 

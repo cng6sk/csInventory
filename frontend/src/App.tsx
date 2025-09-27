@@ -4,9 +4,10 @@ import { ItemForm } from './components/ItemForm'
 import { TradeManagement } from './components/TradeManagement'
 import { InventoryList } from './components/InventoryList'
 import { DailyStats } from './components/DailyStats'
+import { InvestmentPool } from './components/InvestmentPool'
 
 function App() {
-  const [tab, setTab] = useState<'item' | 'trade' | 'inventory' | 'stats'>('item')
+  const [tab, setTab] = useState<'item' | 'trade' | 'inventory' | 'stats' | 'pool'>('pool')
 
   return (
     <div className="main">
@@ -46,6 +47,15 @@ function App() {
           <button 
             className="tab-btn" 
             role="tab" 
+            aria-selected={tab === 'pool'} 
+            aria-current={tab === 'pool' ? 'page' : undefined} 
+            onClick={() => setTab('pool')}
+          >
+            投资池
+          </button>
+          <button 
+            className="tab-btn" 
+            role="tab" 
             aria-selected={tab === 'stats'} 
             aria-current={tab === 'stats' ? 'page' : undefined} 
             onClick={() => setTab('stats')}
@@ -59,6 +69,7 @@ function App() {
         {tab === 'item' && <ItemForm />}
         {tab === 'trade' && <TradeManagement />}
         {tab === 'inventory' && <InventoryList />}
+        {tab === 'pool' && <InvestmentPool />}
         {tab === 'stats' && <DailyStats />}
       </section>
     </div>

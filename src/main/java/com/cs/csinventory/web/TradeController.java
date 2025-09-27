@@ -6,9 +6,11 @@ import com.cs.csinventory.domain.Trade;
 import com.cs.csinventory.service.InventoryService;
 import com.cs.csinventory.service.ItemService;
 import com.cs.csinventory.service.TradeService;
+import com.cs.csinventory.service.InvestmentPoolService;
 import com.cs.csinventory.service.dto.DailyFlowDTO;
 import com.cs.csinventory.service.dto.TradeWithItemDTO;
 import com.cs.csinventory.service.dto.InventoryWithItemDTO;
+import com.cs.csinventory.service.dto.InvestmentPoolDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +31,7 @@ public class TradeController {
     private final TradeService tradeService;
     private final ItemService itemService;
     private final InventoryService inventoryService;
+    private final InvestmentPoolService investmentPoolService;
 
     // ==================== 物品管理接口 ====================
     
@@ -172,6 +175,29 @@ public class TradeController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime end
     ) {
         return tradeService.dailySummary(start, end);
+    }
+
+    @GetMapping("/stats/investment-pool")
+    public InvestmentPoolDTO getInvestmentPoolStatistics() {
+        return investmentPoolService.getInvestmentPoolStatistics();
+    }
+
+    @PostMapping("/stats/calculate-with-manual-value")
+    public InvestmentPoolDTO calculateWithManualValue(@RequestBody Map<String, Object> request) {
+        try {
+            String manualValueStr = (String) request.get("manualValue");
+            BigDecimal manualValue = null;
+            
+            if (manualValueStr != null && !manualValueStr.trim().isEmpty()) {
+                manualValue = new BigDecimal(manualValueStr);
+            }
+            
+            return investmentPoolService.getInvestmentPoolStatisticsWithManualValue(manualValue);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("无效的价格格式");
+        } catch (Exception e) {
+            throw new RuntimeException("计算失败: " + e.getMessage());
+        }
     }
 
     // ==================== 内部类 ====================
