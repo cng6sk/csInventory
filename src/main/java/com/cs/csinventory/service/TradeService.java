@@ -20,11 +20,6 @@ public class TradeService {
     private final ItemRepository itemRepo;
 
     @Transactional
-    public Item createItem(Item item) {
-        return itemRepo.save(item);
-    }
-
-    @Transactional
     public Trade createTrade(Trade trade) {
         // 保证引用的 Item 是持久化的
         if (trade.getItem() == null || trade.getItem().getId() == null) {

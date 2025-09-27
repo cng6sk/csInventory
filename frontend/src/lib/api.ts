@@ -1,9 +1,9 @@
 export interface Item {
   id?: number;
-  name: string;
-  exterior?: string;
-  game?: string;
-  marketId?: string;
+  marketHashName: string;
+  cnName: string;
+  enName: string;
+  nameId: number;
 }
 
 export interface Trade {
@@ -19,10 +19,30 @@ export interface DailyFlowDTO {
   net: string;
 }
 
+export interface ImportResult {
+  importedCount: number;
+  skippedCount: number;
+  skippedItems: string[];
+  totalItems: number;
+}
+
 async function request<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
   const res = await fetch(input, {
     headers: { 'Content-Type': 'application/json' },
     ...init,
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || `HTTP ${res.status}`);
+  }
+  return (await res.json()) as T;
+}
+
+// 文件上传专用的请求函数
+async function uploadRequest<T>(input: RequestInfo, formData: FormData): Promise<T> {
+  const res = await fetch(input, {
+    method: 'POST',
+    body: formData,
   });
   if (!res.ok) {
     const text = await res.text();
@@ -36,6 +56,15 @@ export const api = {
     method: 'POST',
     body: JSON.stringify(item),
   }),
+  importItems: (jsonData: string) => request<ImportResult>('/api/items/import', {
+    method: 'POST',
+    body: JSON.stringify({ jsonData }),
+  }),
+  importItemsFromFile: (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return uploadRequest<ImportResult>('/api/items/import-file', formData);
+  },
   createTrade: (trade: Trade) => request<Trade>('/api/trades', {
     method: 'POST',
     body: JSON.stringify(trade),

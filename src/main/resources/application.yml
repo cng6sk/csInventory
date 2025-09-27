@@ -8,6 +8,13 @@ spring:
     password: cspass
     driver-class-name: com.mysql.cj.jdbc.Driver
 
+  # 文件上传配置
+  servlet:
+    multipart:
+      max-file-size: 100MB        # 单个文件最大大小
+      max-request-size: 100MB     # 整个请求最大大小
+      file-size-threshold: 2KB    # 文件写入磁盘的阈值
+
   jpa:
     hibernate:
       ddl-auto: update   # 开发期让 JPA 自动建表；改为 validate 后可配合 Flyway 管理

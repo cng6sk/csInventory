@@ -5,26 +5,27 @@ import lombok.*;
 
 @Entity
 @Table(name = "items", indexes = {
-        @Index(name = "idx_item_name", columnList = "name")
+        @Index(name = "idx_item_market_hash_name", columnList = "marketHashName"),
+        @Index(name = "idx_item_name_id", columnList = "nameId")
 })
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class Item {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 物品名（例如：AK-47 | Redline）
-    @Column(nullable = false, length = 255)
-    private String name;
+    // 市场哈希名称，作为唯一标识符（例如：AK-47 | Aquamarine Revenge (Battle-Scarred)）
+    @Column(nullable = false, length = 512, unique = true)
+    private String marketHashName;
 
-    // 外观（Factory New / Minimal Wear / Field-Tested / Well-Worn / Battle-Scarred）
-    @Column(length = 64)
-    private String exterior;
+    // 中文名称
+    @Column(nullable = false, length = 512)
+    private String cnName;
 
-    // 游戏（固定 "CS" 或预留字段）
-    @Column(length = 32)
-    private String game;
+    // 英文名称
+    @Column(nullable = false, length = 512)
+    private String enName;
 
-    // 市场ID（如 Steam 市场条目ID，可选）
-    @Column(length = 128, unique = false)
-    private String marketId;
+    // Steam API中的name_id
+    @Column(nullable = false, unique = true)
+    private Long nameId;
 }

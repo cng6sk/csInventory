@@ -20,9 +20,9 @@ docker compose up -d
 ```
 
 启动后：
-- 前端访问：`http://localhost/`
-- 后端 API：`http://localhost:8080/api/*`
-- MySQL：`localhost:3306`，库：`cs_inventory`，用户：`csuser/cspass`
+- 前端访问：`http://localhost:3000`
+- 后端 API：`http://localhost:9090/api/*`
+- MySQL：`localhost:3307`，库：`cs_inventory`，用户：`csuser/cspass`
 
 ## 目录与镜像说明
 - 根目录 `Dockerfile`：后端（多阶段构建，JDK21），容器端口 8080
