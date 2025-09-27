@@ -7,10 +7,8 @@ export function TradeForm() {
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [searchKeyword, setSearchKeyword] = useState<string>('');
   const [showDropdown, setShowDropdown] = useState<boolean>(false);
-  const [tradeType, setTradeType] = useState<'BUY' | 'SELL'>('BUY');
   const [unitPrice, setUnitPrice] = useState<string>('');
   const [quantity, setQuantity] = useState<string>('');
-  const [currentQuantity, setCurrentQuantity] = useState<number>(0);
   const [loading, setLoading] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -60,23 +58,6 @@ export function TradeForm() {
     searchItems('');
   }, []);
 
-  // 当选择物品时，加载当前库存
-  useEffect(() => {
-    if (selectedItem) {
-      const loadCurrentQuantity = async () => {
-        try {
-          const result = await api.getCurrentQuantity(selectedItem.nameId);
-          setCurrentQuantity(result.quantity);
-        } catch (err) {
-          setCurrentQuantity(0);
-        }
-      };
-      loadCurrentQuantity();
-    } else {
-      setCurrentQuantity(0);
-    }
-  }, [selectedItem]);
-
   // 选择物品
   const handleSelectItem = (item: Item) => {
     setSelectedItem(item);
@@ -88,7 +69,6 @@ export function TradeForm() {
   const handleClearSelection = () => {
     setSelectedItem(null);
     setSearchKeyword('');
-    setCurrentQuantity(0);
   };
 
   // 处理输入框焦点
@@ -138,33 +118,24 @@ export function TradeForm() {
       if (!quantity || parseInt(quantity) <= 0) {
         throw new Error('请输入有效的数量');
       }
-      if (tradeType === 'SELL' && parseInt(quantity) > currentQuantity) {
-        throw new Error(`卖出数量不能超过当前库存(${currentQuantity})`);
-      }
 
       const trade: Trade = {
         nameId: selectedItem.nameId,
-        type: tradeType,
+        type: 'BUY', // 固定为买入
         unitPrice: parseFloat(unitPrice).toFixed(4),
         quantity: parseInt(quantity)
       };
 
       const result = await api.createTrade(trade);
-      setMessage(`交易创建成功！交易ID: ${result.id}`);
+      setMessage(`买入交易创建成功！交易ID: ${result.id}`);
       setMessageType('success');
       
       // 重置表单
       setUnitPrice('');
       setQuantity('');
       
-      // 刷新库存
-      if (selectedItem) {
-        const newQuantity = await api.getCurrentQuantity(selectedItem.nameId);
-        setCurrentQuantity(newQuantity.quantity);
-      }
-      
     } catch (err: any) {
-      setMessage(err.message || '创建交易失败');
+      setMessage(err.message || '创建买入交易失败');
       setMessageType('error');
     } finally {
       setLoading(false);
@@ -173,7 +144,7 @@ export function TradeForm() {
 
   return (
     <div className="form-centered">
-      <h3>创建交易</h3>
+      <h3>创建买入交易</h3>
       
       <form onSubmit={handleSubmit}>
         {/* 物品搜索选择器 */}
@@ -268,54 +239,13 @@ export function TradeForm() {
                   </div>
                 )}
               </div>
-              
-              {selectedItem && (
-                <span style={{ 
-                  fontSize: '0.9em', 
-                  color: currentQuantity > 0 ? '#4CAF50' : '#f44336',
-                  fontWeight: 'bold',
-                  padding: '4px 8px',
-                  backgroundColor: currentQuantity > 0 ? '#e8f5e8' : '#ffebee',
-                  borderRadius: '4px',
-                  whiteSpace: 'nowrap'
-                }}>
-                  库存: {currentQuantity}
-                </span>
-              )}
             </div>
-          </div>
-        </label>
-
-        {/* 交易类型 */}
-        <label className="label">
-          交易类型
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <input
-                type="radio"
-                name="tradeType"
-                value="BUY"
-                checked={tradeType === 'BUY'}
-                onChange={(e) => setTradeType(e.target.value as 'BUY' | 'SELL')}
-              />
-              买入
-            </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <input
-                type="radio"
-                name="tradeType"
-                value="SELL"
-                checked={tradeType === 'SELL'}
-                onChange={(e) => setTradeType(e.target.value as 'BUY' | 'SELL')}
-              />
-              卖出
-            </label>
           </div>
         </label>
 
         {/* 单价输入 */}
         <label className="label">
-          单价 (¥)
+          买入单价 (¥)
           <input
             className="input"
             type="number"
@@ -330,7 +260,7 @@ export function TradeForm() {
 
         {/* 数量输入 */}
         <label className="label">
-          数量
+          买入数量
           <input
             className="input"
             type="number"
@@ -344,7 +274,7 @@ export function TradeForm() {
 
         {/* 总金额显示 */}
         <div className="label">
-          <span>总金额: ¥{totalAmount}</span>
+          <span>总投入金额: ¥{totalAmount}</span>
         </div>
 
         {/* 提交按钮 */}
@@ -353,11 +283,11 @@ export function TradeForm() {
           type="submit" 
           disabled={loading || !selectedItem || !unitPrice || !quantity}
           style={{
-            backgroundColor: tradeType === 'BUY' ? '#4CAF50' : '#f44336',
+            backgroundColor: '#4CAF50',
             opacity: loading || !selectedItem || !unitPrice || !quantity ? 0.6 : 1
           }}
         >
-          {loading ? '处理中...' : `${tradeType === 'BUY' ? '买入' : '卖出'}`}
+          {loading ? '处理中...' : '确认买入'}
         </button>
       </form>
 

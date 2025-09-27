@@ -103,6 +103,27 @@ public class TradeController {
         return tradeService.createTrade(trade);
     }
 
+    @PostMapping("/trades/sell")
+    public Trade createSellTrade(@RequestBody SellRequest request) {
+        // 验证是否有足够库存
+        if (!inventoryService.hasEnoughInventory(request.nameId(), request.quantity())) {
+            Integer currentQuantity = inventoryService.getCurrentQuantity(request.nameId());
+            throw new IllegalStateException(
+                String.format("库存不足，当前持有: %d，尝试卖出: %d", currentQuantity, request.quantity())
+            );
+        }
+        
+        // 构建卖出交易
+        Trade trade = Trade.builder()
+                .nameId(request.nameId())
+                .type(Trade.Type.SELL)
+                .unitPrice(request.unitPrice())
+                .quantity(request.quantity())
+                .build();
+        
+        return tradeService.createTrade(trade);
+    }
+
     @GetMapping("/trades")
     public List<TradeWithItemDTO> getAllTrades() {
         return tradeService.getAllTradesWithItem();
@@ -161,6 +182,15 @@ public class TradeController {
     public record TradeRequest(
             Long nameId,
             Trade.Type type,
+            BigDecimal unitPrice,
+            Integer quantity
+    ) {}
+
+    /**
+     * 卖出请求DTO
+     */
+    public record SellRequest(
+            Long nameId,
             BigDecimal unitPrice,
             Integer quantity
     ) {}

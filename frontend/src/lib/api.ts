@@ -44,6 +44,12 @@ export interface ImportResult {
   totalItems: number;
 }
 
+export interface SellRequest {
+  nameId: number;
+  unitPrice: string;  // BigDecimal作为字符串
+  quantity: number;
+}
+
 async function request<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
   const res = await fetch(input, {
     headers: { 'Content-Type': 'application/json' },
@@ -99,6 +105,10 @@ export const api = {
   createTrade: (trade: Trade) => request<Trade>('/api/trades', {
     method: 'POST',
     body: JSON.stringify(trade),
+  }),
+  createSellTrade: (sellRequest: SellRequest) => request<Trade>('/api/trades/sell', {
+    method: 'POST',
+    body: JSON.stringify(sellRequest),
   }),
   getAllTrades: () => request<Trade[]>('/api/trades'),
   getTradeHistory: (nameId: number) => request<Trade[]>(`/api/trades/history/${nameId}`),

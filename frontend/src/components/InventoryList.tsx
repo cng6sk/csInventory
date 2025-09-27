@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '../lib/api';
 import type { Inventory } from '../lib/api';
+import { SellForm } from './SellForm';
 
 function formatPrice(price: string) {
   return `¥${parseFloat(price).toFixed(4)}`;
@@ -15,6 +16,7 @@ export function InventoryList() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedInventory, setSelectedInventory] = useState<Inventory | null>(null);
+  const [sellInventory, setSellInventory] = useState<Inventory | null>(null);
 
   const loadInventory = async () => {
     setLoading(true);
@@ -149,13 +151,29 @@ export function InventoryList() {
                 </td>
                 <td>{formatDateTime(item.lastUpdatedAt)}</td>
                 <td>
-                  <button 
-                    className="button"
-                    style={{ fontSize: '0.8em', padding: '4px 8px' }}
-                    onClick={() => setSelectedInventory(item)}
-                  >
-                    详情
-                  </button>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button 
+                      className="button"
+                      style={{ fontSize: '0.8em', padding: '4px 8px' }}
+                      onClick={() => setSelectedInventory(item)}
+                    >
+                      详情
+                    </button>
+                    {item.currentQuantity > 0 && (
+                      <button 
+                        className="button"
+                        style={{ 
+                          fontSize: '0.8em', 
+                          padding: '4px 8px',
+                          backgroundColor: '#f44336',
+                          color: 'white'
+                        }}
+                        onClick={() => setSellInventory(item)}
+                      >
+                        卖出
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
@@ -251,6 +269,18 @@ export function InventoryList() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* 卖出表单弹窗 */}
+      {sellInventory && (
+        <SellForm
+          inventory={sellInventory}
+          onSellSuccess={() => {
+            setSellInventory(null);
+            loadInventory(); // 刷新库存列表
+          }}
+          onCancel={() => setSellInventory(null)}
+        />
       )}
     </div>
   );

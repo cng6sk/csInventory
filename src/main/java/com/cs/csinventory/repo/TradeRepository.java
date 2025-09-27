@@ -31,18 +31,18 @@ public interface TradeRepository extends JpaRepository<Trade, Long> {
     /**
      * 查询指定时间范围内的每日交易统计
      */
-    @Query("""
-        SELECT DATE(t.createdAt) as tradeDate,
-               t.type as tradeType,
-               SUM(t.quantity) as totalQuantity,
-               SUM(t.totalAmount) as totalAmount,
-               COUNT(t) as tradeCount
-        FROM Trade t
-        WHERE t.createdAt BETWEEN :start AND :end
-        GROUP BY DATE(t.createdAt), t.type
-        ORDER BY tradeDate DESC, t.type
-    """)
-    List<Object[]> findDailyTradeSummary(@Param("start") OffsetDateTime start, @Param("end") OffsetDateTime end);
+    @Query(value = """
+        SELECT DATE(t.created_at) as trade_date,
+               t.type as trade_type,
+               SUM(t.quantity) as total_quantity,
+               SUM(t.total_amount) as total_amount,
+               COUNT(t) as trade_count
+        FROM trades t
+        WHERE t.created_at BETWEEN :start AND :end
+        GROUP BY DATE(t.created_at), t.type
+        ORDER BY trade_date DESC, t.type
+         """, nativeQuery = true)
+     List<Object[]> findDailyTradeSummary(@Param("start") OffsetDateTime start, @Param("end") OffsetDateTime end);
     
     /**
      * 获取所有交易记录并包含物品信息
