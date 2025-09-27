@@ -12,6 +12,10 @@ function toLocalDateTimeInputValue(d: Date) {
   return `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
 }
 
+function formatPrice(price: string) {
+  return `¥${parseFloat(price).toFixed(2)}`;
+}
+
 export function DailyStats() {
   const now = new Date();
   const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -43,46 +47,221 @@ export function DailyStats() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // 计算汇总统计
+  const totalBuyAmount = data.reduce((sum, row) => sum + parseFloat(row.totalBuy), 0);
+  const totalSellAmount = data.reduce((sum, row) => sum + parseFloat(row.totalSell), 0);
+  const netAmount = totalSellAmount - totalBuyAmount;
+  const profitDays = data.filter(row => parseFloat(row.net) > 0).length;
+  const lossDays = data.filter(row => parseFloat(row.net) < 0).length;
+
   return (
-    <div className="card" style={{ display: 'grid', gap: 12 }}>
-      <h3>按日统计</h3>
+    <div className="container-full" style={{ gap: 16 }}>
+      <h3>数据统计</h3>
+      
+      {/* 查询控件 */}
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
         <label className="label">
-          开始
+          开始时间
           <input className="datetime" type="datetime-local" value={start} onChange={(e) => setStart(e.target.value)} />
         </label>
         <label className="label">
-          结束
+          结束时间
           <input className="datetime" type="datetime-local" value={end} onChange={(e) => setEnd(e.target.value)} />
         </label>
-        <button className="button" onClick={load} disabled={loading}>{loading ? '加载中...' : '查询'}</button>
+        <button className="button" onClick={load} disabled={loading}>
+          {loading ? '查询中...' : '查询'}
+        </button>
       </div>
-      {error && <div className="error">{error}</div>}
-      <table className="table">
-        <thead>
-          <tr>
-            <th>日期</th>
-            <th style={{ textAlign: 'right' }}>买入总额</th>
-            <th style={{ textAlign: 'right' }}>卖出总额</th>
-            <th style={{ textAlign: 'right' }}>净额</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((row) => (
-            <tr key={row.day}>
-              <td>{row.day}</td>
-              <td style={{ textAlign: 'right' }}>{row.totalBuy}</td>
-              <td style={{ textAlign: 'right' }}>{row.totalSell}</td>
-              <td style={{ textAlign: 'right' }}>{row.net}</td>
-            </tr>
-          ))}
-          {!loading && data.length === 0 && (
+
+      {/* 错误显示 */}
+      {error && <div className="error" style={{ color: '#f44336' }}>{error}</div>}
+
+      {/* 汇总统计卡片 */}
+      {data.length > 0 && (
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+          gap: '12px',
+          marginBottom: '16px'
+        }}>
+          <div style={{
+            padding: '12px',
+            backgroundColor: '#e3f2fd',
+            borderRadius: '4px',
+            textAlign: 'center'
+          }}>
+            <div style={{ fontSize: '0.9em', color: '#666', marginBottom: '4px' }}>总买入</div>
+            <div style={{ fontSize: '1.2em', fontWeight: 'bold', color: '#1976d2' }}>
+              {formatPrice(totalBuyAmount.toFixed(2))}
+            </div>
+          </div>
+          <div style={{
+            padding: '12px',
+            backgroundColor: '#e8f5e8',
+            borderRadius: '4px',
+            textAlign: 'center'
+          }}>
+            <div style={{ fontSize: '0.9em', color: '#666', marginBottom: '4px' }}>总卖出</div>
+            <div style={{ fontSize: '1.2em', fontWeight: 'bold', color: '#388e3c' }}>
+              {formatPrice(totalSellAmount.toFixed(2))}
+            </div>
+          </div>
+          <div style={{
+            padding: '12px',
+            backgroundColor: netAmount >= 0 ? '#e8f5e8' : '#ffebee',
+            borderRadius: '4px',
+            textAlign: 'center'
+          }}>
+            <div style={{ fontSize: '0.9em', color: '#666', marginBottom: '4px' }}>净收益</div>
+            <div style={{ 
+              fontSize: '1.2em', 
+              fontWeight: 'bold', 
+              color: netAmount >= 0 ? '#388e3c' : '#d32f2f' 
+            }}>
+              {formatPrice(netAmount.toFixed(2))}
+            </div>
+          </div>
+          <div style={{
+            padding: '12px',
+            backgroundColor: '#f3e5f5',
+            borderRadius: '4px',
+            textAlign: 'center'
+          }}>
+            <div style={{ fontSize: '0.9em', color: '#666', marginBottom: '4px' }}>盈利天数</div>
+            <div style={{ fontSize: '1.2em', fontWeight: 'bold', color: '#7b1fa2' }}>
+              {profitDays} / {data.length}
+            </div>
+          </div>
+          <div style={{
+            padding: '12px',
+            backgroundColor: '#ffecf3',
+            borderRadius: '4px',
+            textAlign: 'center'
+          }}>
+            <div style={{ fontSize: '0.9em', color: '#666', marginBottom: '4px' }}>亏损天数</div>
+            <div style={{ fontSize: '1.2em', fontWeight: 'bold', color: '#d32f2f' }}>
+              {lossDays} / {data.length}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 数据表格 */}
+      <div style={{ overflowX: 'auto' }}>
+        <table className="table">
+          <thead>
             <tr>
-              <td colSpan={4} style={{ padding: 8, textAlign: 'center' }}>无数据</td>
+              <th>日期</th>
+              <th className="text-right">买入总额</th>
+              <th className="text-right">卖出总额</th>
+              <th className="text-right">当日净额</th>
+              <th>盈亏状态</th>
             </tr>
-          )}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {data.map((row) => {
+              const netValue = parseFloat(row.net);
+              const isProfit = netValue > 0;
+              const isLoss = netValue < 0;
+              
+              return (
+                <tr key={row.day} style={{
+                  backgroundColor: isProfit ? '#f1f8e9' : isLoss ? '#ffebee' : 'transparent'
+                }}>
+                  <td style={{ fontWeight: 'bold' }}>{row.day}</td>
+                  <td className="text-right" style={{ color: '#1976d2' }}>
+                    {formatPrice(row.totalBuy)}
+                  </td>
+                  <td className="text-right" style={{ color: '#388e3c' }}>
+                    {formatPrice(row.totalSell)}
+                  </td>
+                  <td className="text-right" style={{ 
+                    fontWeight: 'bold',
+                    color: isProfit ? '#388e3c' : isLoss ? '#d32f2f' : '#666'
+                  }}>
+                    {formatPrice(row.net)}
+                  </td>
+                  <td>
+                    {isProfit && (
+                      <span style={{ 
+                        padding: '2px 8px', 
+                        backgroundColor: '#4caf50', 
+                        color: 'white', 
+                        borderRadius: '12px', 
+                        fontSize: '0.8em'
+                      }}>
+                        盈利
+                      </span>
+                    )}
+                    {isLoss && (
+                      <span style={{ 
+                        padding: '2px 8px', 
+                        backgroundColor: '#f44336', 
+                        color: 'white', 
+                        borderRadius: '12px', 
+                        fontSize: '0.8em'
+                      }}>
+                        亏损
+                      </span>
+                    )}
+                    {netValue === 0 && (
+                      <span style={{ 
+                        padding: '2px 8px', 
+                        backgroundColor: '#9e9e9e', 
+                        color: 'white', 
+                        borderRadius: '12px', 
+                        fontSize: '0.8em'
+                      }}>
+                        平衡
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+            {!loading && data.length === 0 && (
+              <tr>
+                <td colSpan={5} style={{ padding: 16, textAlign: 'center', color: '#666' }}>
+                  选择时间范围后点击查询
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* 数据分析 */}
+      {data.length > 0 && (
+        <div style={{
+          padding: '16px',
+          backgroundColor: '#fafafa',
+          borderRadius: '4px',
+          marginTop: '16px'
+        }}>
+          <h4 style={{ margin: '0 0 12px 0', color: '#333' }}>数据分析</h4>
+          <div style={{ display: 'grid', gap: '8px', fontSize: '0.9em' }}>
+            <div>
+              📈 <strong>平均日收益:</strong> {formatPrice((netAmount / data.length).toFixed(2))}
+            </div>
+            <div>
+              🎯 <strong>盈利率:</strong> {((profitDays / data.length) * 100).toFixed(1)}%
+            </div>
+            <div>
+              📊 <strong>交易活跃度:</strong> {data.filter(row => parseFloat(row.totalBuy) > 0 || parseFloat(row.totalSell) > 0).length} / {data.length} 天有交易
+            </div>
+            {netAmount > 0 && (
+              <div style={{ color: '#388e3c' }}>
+                ✅ <strong>总体表现良好，实现盈利 {formatPrice(netAmount.toFixed(2))}</strong>
+              </div>
+            )}
+            {netAmount < 0 && (
+              <div style={{ color: '#d32f2f' }}>
+                ⚠️ <strong>总体亏损 {formatPrice(Math.abs(netAmount).toFixed(2))}，需要调整交易策略</strong>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 } 

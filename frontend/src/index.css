@@ -47,8 +47,23 @@ body {
 
 h1, h2, h3 { margin: 0; }
 
-h2 { font-size: 22px; font-weight: 600; letter-spacing: 0.2px; }
-h3 { font-size: 16px; font-weight: 600; color: var(--muted); }
+h2 { 
+  font-size: 24px; 
+  font-weight: 700; 
+  letter-spacing: 0.3px; 
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+h3 { 
+  font-size: 18px; 
+  font-weight: 700; 
+  color: var(--text); 
+  margin-bottom: 16px;
+  letter-spacing: 0.2px;
+}
 
 .navbar {
   display: flex;
@@ -108,11 +123,24 @@ h3 { font-size: 16px; font-weight: 600; color: var(--muted); }
 }
 
 .card {
-  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+  background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
   border: 1px solid var(--card-border);
-  border-radius: 16px;
+  border-radius: 20px;
   box-shadow: var(--shadow);
-  padding: 18px;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  opacity: 0.8;
 }
 
 .form {
@@ -120,6 +148,37 @@ h3 { font-size: 16px; font-weight: 600; color: var(--muted); }
   grid-template-columns: 1fr;
   gap: 12px;
   max-width: 520px;
+}
+
+.form-compact {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  max-width: 520px;
+}
+
+.container-full {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  width: 100%;
+}
+
+.container-responsive {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  width: 100%;
+  max-width: none;
+}
+
+.form-centered {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
 }
 .label { font-size: 12px; color: var(--muted); display: grid; gap: 6px; }
 .input, .select, .datetime {
@@ -158,13 +217,56 @@ h3 { font-size: 16px; font-weight: 600; color: var(--muted); }
 .table {
   width: 100%;
   border-collapse: collapse;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
 }
-.table th, .table td {
-  padding: 10px 8px;
-  border-bottom: 1px solid var(--card-border);
+
+.table th {
+  text-align: center;
+  color: var(--text);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 16px 12px;
+  background: linear-gradient(180deg, rgba(109,168,254,0.2), rgba(109,168,254,0.15));
+  border-bottom: 2px solid rgba(109,168,254,0.3);
+  position: relative;
 }
-.table th { text-align: left; color: var(--muted); font-weight: 600; }
-.table td { color: var(--text); }
+
+.table th::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(109,168,254,0.6), transparent);
+}
+
+.table td {
+  color: var(--text);
+  padding: 14px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  text-align: center;
+  vertical-align: middle;
+  transition: background-color 0.2s ease;
+}
+
+.table tbody tr:hover {
+  background: rgba(109,168,254,0.08);
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* 特殊列的文本对齐 */
+.table th.text-left, .table td.text-left { text-align: left; }
+.table th.text-right, .table td.text-right { text-align: right; }
+.table th.text-center, .table td.text-center { text-align: center; }
 
 .helper { color: var(--muted); font-size: 12px; }
 .message { margin-top: 6px; color: var(--text); }

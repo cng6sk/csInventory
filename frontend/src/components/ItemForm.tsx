@@ -132,14 +132,15 @@ export function ItemForm() {
   };
 
   return (
-    <div className="form">
-      <h3>导入物品数据</h3>
-      <p style={{ color: '#666', fontSize: '14px', marginBottom: '16px' }}>
-        支持JSON文件上传或直接粘贴JSON数据，系统将自动解析并导入到数据库中。
-      </p>
-      
-      {/* 导入模式选择 */}
-      <div style={{ marginBottom: '20px' }}>
+    <div className="container-responsive">
+      <div className="form-centered">
+        <h3>导入物品数据</h3>
+        <p style={{ color: '#666', fontSize: '14px', marginBottom: '16px' }}>
+          支持JSON文件上传或直接粘贴JSON数据，系统将自动解析并导入到数据库中。
+        </p>
+        
+        {/* 导入模式选择 */}
+        <div style={{ marginBottom: '20px' }}>
         <label style={{ marginRight: '20px' }}>
           <input
             type="radio"
@@ -229,6 +230,7 @@ export function ItemForm() {
           </div>
         </div>
       )}
+      </div>
 
       {/* 进度条 */}
       {loading && (

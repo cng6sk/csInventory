@@ -1,7 +1,9 @@
 package com.cs.csinventory.web;
 
+import com.cs.csinventory.domain.Inventory;
 import com.cs.csinventory.domain.Item;
 import com.cs.csinventory.domain.Trade;
+import com.cs.csinventory.service.InventoryService;
 import com.cs.csinventory.service.ItemService;
 import com.cs.csinventory.service.TradeService;
 import com.cs.csinventory.service.dto.DailyFlowDTO;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -23,7 +26,15 @@ public class TradeController {
 
     private final TradeService tradeService;
     private final ItemService itemService;
+    private final InventoryService inventoryService;
 
+    // ==================== 物品管理接口 ====================
+    
+    @GetMapping("/items")
+    public List<Item> getAllItems() {
+        return itemService.getAllItems();
+    }
+    
     @PostMapping("/items")
     public Item createItem(@RequestBody Item item) {
         return itemService.createItem(item);
@@ -64,10 +75,62 @@ public class TradeController {
         }
     }
 
+    // ==================== 交易管理接口 ====================
+
     @PostMapping("/trades")
-    public Trade createTrade(@RequestBody Trade trade) {
+    public Trade createTrade(@RequestBody TradeRequest request) {
+        // 构建Trade对象
+        Trade trade = Trade.builder()
+                .nameId(request.nameId())
+                .type(request.type())
+                .unitPrice(request.unitPrice())
+                .quantity(request.quantity())
+                .build();
+        
         return tradeService.createTrade(trade);
     }
+
+    @GetMapping("/trades")
+    public List<Trade> getAllTrades() {
+        return tradeService.getAllTrades();
+    }
+
+    @GetMapping("/trades/history/{nameId}")
+    public List<Trade> getTradeHistory(@PathVariable Long nameId) {
+        return tradeService.getTradeHistory(nameId);
+    }
+
+    @GetMapping("/trades/date-range")
+    public List<Trade> getTradesByDateRange(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime start,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime end
+    ) {
+        return tradeService.getTradesByDateRange(start, end);
+    }
+
+    // ==================== 库存管理接口 ====================
+
+    @GetMapping("/inventory")
+    public List<Inventory> getAllInventory() {
+        return inventoryService.getAllInventory();
+    }
+
+    @GetMapping("/inventory/{nameId}")
+    public Inventory getInventoryByNameId(@PathVariable Long nameId) {
+        return inventoryService.getInventoryByNameId(nameId)
+                .orElse(null);
+    }
+
+    @GetMapping("/inventory/{nameId}/quantity")
+    public Map<String, Object> getCurrentQuantity(@PathVariable Long nameId) {
+        Integer quantity = inventoryService.getCurrentQuantity(nameId);
+        return Map.of(
+                "nameId", nameId,
+                "quantity", quantity
+        );
+    }
+
+    // ==================== 统计接口 ====================
 
     @GetMapping("/stats/daily")
     public List<DailyFlowDTO> daily(
@@ -76,4 +139,16 @@ public class TradeController {
     ) {
         return tradeService.dailySummary(start, end);
     }
+
+    // ==================== 内部类 ====================
+
+    /**
+     * 交易请求DTO
+     */
+    public record TradeRequest(
+            Long nameId,
+            Trade.Type type,
+            BigDecimal unitPrice,
+            Integer quantity
+    ) {}
 }

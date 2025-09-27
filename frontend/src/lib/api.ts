@@ -8,8 +8,22 @@ export interface Item {
 
 export interface Trade {
   id?: number;
-  item: { id: number };
-  // 其余字段后端暂未展示，先预留可扩展
+  nameId: number;
+  type: 'BUY' | 'SELL';
+  unitPrice: string;  // BigDecimal作为字符串
+  quantity: number;
+  totalAmount?: string;  // BigDecimal作为字符串
+  createdAt?: string;
+}
+
+export interface Inventory {
+  id?: number;
+  nameId: number;
+  currentQuantity: number;
+  weightedAverageCost: string;  // BigDecimal作为字符串
+  totalInvestmentCost: string;  // BigDecimal作为字符串
+  createdAt: string;
+  lastUpdatedAt: string;
 }
 
 export interface DailyFlowDTO {
@@ -52,6 +66,8 @@ async function uploadRequest<T>(input: RequestInfo, formData: FormData): Promise
 }
 
 export const api = {
+  // ==================== 物品管理接口 ====================
+  getAllItems: () => request<Item[]>('/api/items'),
   createItem: (item: Item) => request<Item>('/api/items', {
     method: 'POST',
     body: JSON.stringify(item),
@@ -65,11 +81,23 @@ export const api = {
     formData.append('file', file);
     return uploadRequest<ImportResult>('/api/items/import-file', formData);
   },
+
+  // ==================== 交易管理接口 ====================
   createTrade: (trade: Trade) => request<Trade>('/api/trades', {
     method: 'POST',
     body: JSON.stringify(trade),
   }),
-  // /api/stats/daily?start=...&end=...
+  getAllTrades: () => request<Trade[]>('/api/trades'),
+  getTradeHistory: (nameId: number) => request<Trade[]>(`/api/trades/history/${nameId}`),
+  getTradesByDateRange: (start: string, end: string) => 
+    request<Trade[]>(`/api/trades/date-range?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`),
+
+  // ==================== 库存管理接口 ====================
+  getAllInventory: () => request<Inventory[]>('/api/inventory'),
+  getInventoryByNameId: (nameId: number) => request<Inventory>(`/api/inventory/${nameId}`),
+  getCurrentQuantity: (nameId: number) => request<{nameId: number, quantity: number}>(`/api/inventory/${nameId}/quantity`),
+
+  // ==================== 统计接口 ====================
   dailyStats: (startIso: string, endIso: string) =>
     request<DailyFlowDTO[]>(`/api/stats/daily?start=${encodeURIComponent(startIso)}&end=${encodeURIComponent(endIso)}`),
 }; 

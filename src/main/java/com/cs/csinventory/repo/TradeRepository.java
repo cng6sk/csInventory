@@ -1,25 +1,45 @@
 package com.cs.csinventory.repo;
 
 import com.cs.csinventory.domain.Trade;
-// import com.cs.csinventory.domain.Trade.Type;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.time.OffsetDateTime;
 import java.util.List;
 
+@Repository
 public interface TradeRepository extends JpaRepository<Trade, Long> {
-
-    // 简易日报统计：按日汇总买卖额与净额（仅示例，统计口径可扩展）
+    
+    /**
+     * 根据物品nameId查找交易记录
+     */
+    List<Trade> findByNameId(Long nameId);
+    
+    /**
+     * 根据时间范围查找交易记录
+     */
+    List<Trade> findByCreatedAtBetween(OffsetDateTime start, OffsetDateTime end);
+    
+    /**
+     * 根据物品nameId和时间范围查找交易记录
+     */
+    List<Trade> findByNameIdAndCreatedAtBetween(Long nameId, OffsetDateTime start, OffsetDateTime end);
+    
+    /**
+     * 查询指定时间范围内的每日交易统计
+     */
     @Query("""
-      select
-        date(t.occurredAt) as day,
-        sum(case when t.type = com.cs.csinventory.domain.Trade$Type.BUY  then t.unitPrice * t.quantity else 0 end) as totalBuy,
-        sum(case when t.type = com.cs.csinventory.domain.Trade$Type.SELL then t.unitPrice * t.quantity else 0 end) as totalSell
-      from Trade t
-      where t.occurredAt between :start and :end
-      group by date(t.occurredAt)
-      order by day asc
+        SELECT DATE(t.createdAt) as tradeDate,
+               t.type as tradeType,
+               SUM(t.quantity) as totalQuantity,
+               SUM(t.totalAmount) as totalAmount,
+               COUNT(t) as tradeCount
+        FROM Trade t
+        WHERE t.createdAt BETWEEN :start AND :end
+        GROUP BY DATE(t.createdAt), t.type
+        ORDER BY tradeDate DESC, t.type
     """)
-    List<Object[]> summarizeDaily(OffsetDateTime start, OffsetDateTime end);
+    List<Object[]> findDailyTradeSummary(@Param("start") OffsetDateTime start, @Param("end") OffsetDateTime end);
 }

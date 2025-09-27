@@ -10,6 +10,9 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     // 根据市场哈希名称查找物品
     Optional<Item> findByMarketHashName(String marketHashName);
     
+    // 根据nameId查找物品
+    Optional<Item> findByNameId(Long nameId);
+    
     // 检查nameId是否已存在
     boolean existsByNameId(Long nameId);
     

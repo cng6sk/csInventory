@@ -26,6 +26,10 @@ public class ItemService {
     private final ObjectMapper objectMapper;
     private final ItemSaveService itemSaveService;
 
+    public List<Item> getAllItems() {
+        return itemRepository.findAll();
+    }
+    
     @Transactional
     public Item createItem(Item item) {
         return itemRepository.save(item);

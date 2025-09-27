@@ -8,8 +8,8 @@ import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "trades", indexes = {
-        @Index(name = "idx_trade_item", columnList = "item_id"),
-        @Index(name = "idx_trade_time", columnList = "occurredAt"),
+        @Index(name = "idx_trade_name_id", columnList = "nameId"),
+        @Index(name = "idx_trade_time", columnList = "createdAt"),
         @Index(name = "idx_trade_type", columnList = "type")
 })
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
@@ -20,25 +20,42 @@ public class Trade {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    private Item item;
+    // 物品引用（来自Steam API中的物品ID）
+    @Column(nullable = false)
+    private Long nameId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 8)
     private Type type;
 
     @Column(nullable = false, precision = 19, scale = 4)
-    private BigDecimal unitPrice; // 单价（你的成交价，统一用 USD 或 CNY，建议统一币种）
+    private BigDecimal unitPrice; // 单价
 
     @Column(nullable = false)
-    private Integer quantity;
+    private Integer quantity; // 数量
 
-    @Column(length = 128)
-    private String platform; // 交易平台（Steam, Buff, igxe…）
-
-    @Column(length = 128)
-    private String counterparty; // 对手方（可选）
+    @Column(nullable = false, precision = 19, scale = 4)
+    private BigDecimal totalAmount; // 总金额（冗余字段）
 
     @Column(nullable = false)
-    private OffsetDateTime occurredAt; // 成交时间（UTC）
+    private OffsetDateTime createdAt; // 创建时间
+
+    @PrePersist
+    protected void onCreate() {
+        if (createdAt == null) {
+            createdAt = OffsetDateTime.now();
+        }
+        // 计算总金额
+        if (unitPrice != null && quantity != null) {
+            totalAmount = unitPrice.multiply(BigDecimal.valueOf(quantity));
+        }
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        // 更新时重新计算总金额
+        if (unitPrice != null && quantity != null) {
+            totalAmount = unitPrice.multiply(BigDecimal.valueOf(quantity));
+        }
+    }
 }
