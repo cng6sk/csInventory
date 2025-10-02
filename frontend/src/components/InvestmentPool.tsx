@@ -293,6 +293,15 @@ export function InvestmentPool() {
           
           <div>
             <div style={{ fontSize: '0.9em', color: 'var(--muted)', marginBottom: '4px' }}>
+              静态成本
+            </div>
+            <div style={{ fontSize: '1.3em', fontWeight: 'bold', color: '#ff5722' }}>
+              {formatPrice(data.staticCost)}
+            </div>
+          </div>
+          
+          <div>
+            <div style={{ fontSize: '0.9em', color: 'var(--muted)', marginBottom: '4px' }}>
               总价值
             </div>
             <div style={{ fontSize: '1.3em', fontWeight: 'bold', color: '#2196f3' }}>

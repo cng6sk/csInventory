@@ -55,6 +55,7 @@ export interface InvestmentPoolDTO {
   totalInvestment: string;     // 累计投入资金
   totalWithdrawal: string;     // 累计回收资金
   currentCost: string;         // 当前持仓成本
+  staticCost: string;          // 静态成本
   currentHoldingValue: string; // 当前持仓估值
   
   // 收益统计

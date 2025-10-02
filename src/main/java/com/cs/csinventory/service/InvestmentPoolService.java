@@ -45,21 +45,24 @@ public class InvestmentPoolService {
         BigDecimal totalWithdrawal = calculateTotalWithdrawal(allTrades);
         BigDecimal currentCost = totalInvestment.subtract(totalWithdrawal);
         
-        // 3. 计算当前持仓估值 (使用成本价，前端可手动覆盖)
-        BigDecimal currentHoldingValue = calculateCurrentHoldingValueByCost();
+        // 3. 计算静态成本 (当前持仓物品的购买成本总和)
+        BigDecimal staticCost = calculateCurrentHoldingValueByCost();
         
-        // 4. 计算收益统计
+        // 4. 计算当前持仓估值 (使用成本价，前端可手动覆盖)
+        BigDecimal currentHoldingValue = staticCost;
+        
+        // 5. 计算收益统计
         BigDecimal absoluteProfit = currentHoldingValue.subtract(currentCost);
         BigDecimal returnRate = currentCost.compareTo(BigDecimal.ZERO) > 0 ? 
             absoluteProfit.divide(currentCost, 4, RoundingMode.HALF_UP) : BigDecimal.ZERO;
         BigDecimal totalValue = totalWithdrawal.add(currentHoldingValue);
         
-        // 5. 计算时间统计
+        // 6. 计算时间统计
         LocalDate firstInvestmentDate = getFirstInvestmentDate(allTrades);
         LocalDate lastTradeDate = getLastTradeDate(allTrades);
         Integer totalInvestmentDays = (int) ChronoUnit.DAYS.between(firstInvestmentDate, LocalDate.now()) + 1;
         
-        // 6. 计算交易统计
+        // 7. 计算交易统计
         Integer totalBuyTrades = (int) allTrades.stream().filter(t -> t.getType() == Trade.Type.BUY).count();
         Integer totalSellTrades = (int) allTrades.stream().filter(t -> t.getType() == Trade.Type.SELL).count();
         Integer totalItems = (int) allTrades.stream().map(Trade::getNameId).distinct().count();
@@ -70,6 +73,7 @@ public class InvestmentPoolService {
                 .totalInvestment(totalInvestment)
                 .totalWithdrawal(totalWithdrawal)
                 .currentCost(currentCost)
+                .staticCost(staticCost)
                 .currentHoldingValue(currentHoldingValue)
                 .absoluteProfit(absoluteProfit)
                 .returnRate(returnRate)
@@ -145,6 +149,7 @@ public class InvestmentPoolService {
                 .totalInvestment(BigDecimal.ZERO)
                 .totalWithdrawal(BigDecimal.ZERO)
                 .currentCost(BigDecimal.ZERO)
+                .staticCost(BigDecimal.ZERO)
                 .currentHoldingValue(BigDecimal.ZERO)
                 .absoluteProfit(BigDecimal.ZERO)
                 .returnRate(BigDecimal.ZERO)
@@ -175,8 +180,11 @@ public class InvestmentPoolService {
         BigDecimal totalWithdrawal = calculateTotalWithdrawal(allTrades);
         BigDecimal currentCost = totalInvestment.subtract(totalWithdrawal);
         
+        // 计算静态成本 (始终使用购买成本)
+        BigDecimal staticCost = calculateCurrentHoldingValueByCost();
+        
         // 使用手动输入的市场价值
-        BigDecimal currentHoldingValue = manualMarketValue != null ? manualMarketValue : calculateCurrentHoldingValueByCost();
+        BigDecimal currentHoldingValue = manualMarketValue != null ? manualMarketValue : staticCost;
         
         // 计算收益统计
         BigDecimal absoluteProfit = currentHoldingValue.subtract(currentCost);
@@ -200,6 +208,7 @@ public class InvestmentPoolService {
                 .totalInvestment(totalInvestment)
                 .totalWithdrawal(totalWithdrawal)
                 .currentCost(currentCost)
+                .staticCost(staticCost)
                 .currentHoldingValue(currentHoldingValue)
                 .absoluteProfit(absoluteProfit)
                 .returnRate(returnRate)

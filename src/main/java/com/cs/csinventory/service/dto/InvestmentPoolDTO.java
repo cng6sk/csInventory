@@ -14,6 +14,7 @@ public record InvestmentPoolDTO(
         BigDecimal totalInvestment,     // 累计投入资金 (所有买入金额总和)
         BigDecimal totalWithdrawal,     // 累计回收资金 (所有卖出金额总和)
         BigDecimal currentCost,         // 当前持仓成本 (投入-回收)
+        BigDecimal staticCost,          // 静态成本 (当前持仓物品的购买成本总和，不受市场价影响)
         BigDecimal currentHoldingValue, // 当前持仓估值 (暂时用成本价，后续接入爬虫)
         
         // 收益统计
