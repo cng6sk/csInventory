@@ -16,6 +16,7 @@ export function TradeHistory() {
   const [error, setError] = useState<string | null>(null);
   const [nameIdFilter, setNameIdFilter] = useState<string>('');
   const [typeFilter, setTypeFilter] = useState<'ALL' | 'BUY' | 'SELL'>('ALL');
+  const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
 
   const loadAllTrades = async () => {
     setLoading(true);
@@ -59,6 +60,25 @@ export function TradeHistory() {
     if (typeFilter === 'ALL') return true;
     return trade.type === typeFilter;
   });
+
+  const handleDeleteTrade = async (tradeId: number) => {
+    setLoading(true);
+    setError(null);
+    try {
+      await api.deleteTrade(tradeId);
+      // 重新加载交易列表
+      if (nameIdFilter.trim()) {
+        await loadTradesByNameId(parseInt(nameIdFilter));
+      } else {
+        await loadAllTrades();
+      }
+      setDeleteConfirm(null);
+    } catch (err: any) {
+      setError(err.message || '删除交易失败');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="container-full">
@@ -120,7 +140,7 @@ export function TradeHistory() {
 
       {/* 交易列表 */}
       <div style={{ overflowX: 'auto' }}>
-        <table className="table" style={{ minWidth: '700px' }}>
+        <table className="table" style={{ minWidth: '800px' }}>
           <thead>
             <tr>
               <th>交易ID</th>
@@ -130,6 +150,7 @@ export function TradeHistory() {
               <th className="text-right">数量</th>
               <th className="text-right">总金额</th>
               <th>交易时间</th>
+              <th>操作</th>
             </tr>
           </thead>
           <tbody>
@@ -164,11 +185,57 @@ export function TradeHistory() {
                   {trade.totalAmount ? formatPrice(trade.totalAmount) : ''}
                 </td>
                 <td>{trade.createdAt ? formatDateTime(trade.createdAt) : ''}</td>
+                <td>
+                  {deleteConfirm === trade.id ? (
+                    <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                      <button
+                        className="button"
+                        style={{ 
+                          fontSize: '0.85em', 
+                          padding: '4px 8px',
+                          backgroundColor: '#f44336',
+                          border: 'none'
+                        }}
+                        onClick={() => trade.id && handleDeleteTrade(trade.id)}
+                        disabled={loading}
+                      >
+                        确认删除
+                      </button>
+                      <button
+                        className="button"
+                        style={{ 
+                          fontSize: '0.85em', 
+                          padding: '4px 8px',
+                          backgroundColor: '#666',
+                          border: 'none'
+                        }}
+                        onClick={() => setDeleteConfirm(null)}
+                        disabled={loading}
+                      >
+                        取消
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      className="button"
+                      style={{ 
+                        fontSize: '0.85em', 
+                        padding: '4px 8px',
+                        backgroundColor: '#ff9800',
+                        border: 'none'
+                      }}
+                      onClick={() => setDeleteConfirm(trade.id || null)}
+                      disabled={loading}
+                    >
+                      删除
+                    </button>
+                  )}
+                </td>
               </tr>
             ))}
             {!loading && filteredTrades.length === 0 && (
               <tr>
-                <td colSpan={7} style={{ padding: '16px', textAlign: 'center', color: 'var(--muted)' }}>
+                <td colSpan={8} style={{ padding: '16px', textAlign: 'center', color: 'var(--muted)' }}>
                   暂无交易记录
                 </td>
               </tr>

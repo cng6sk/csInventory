@@ -92,7 +92,8 @@ export function InvestmentPool() {
 
   if (!data) return null;
 
-  const isProfit = parseFloat(data.absoluteProfit) > 0;
+  // 使用新的真实盈利字段
+  const isProfit = parseFloat(data.totalProfit) > 0;
   const profitColor = isProfit ? '#4caf50' : '#f44336';
   const profitIcon = isProfit ? '📈' : '📉';
 
@@ -189,7 +190,7 @@ export function InvestmentPool() {
         gap: '16px',
         marginBottom: '24px'
       }}>
-        {/* 总投入 */}
+        {/* 真实投入 */}
         <div className="metric-card" style={{
           padding: '20px',
           backgroundColor: 'rgba(33, 150, 243, 0.1)',
@@ -198,13 +199,13 @@ export function InvestmentPool() {
           textAlign: 'center'
         }}>
           <div style={{ fontSize: '0.9em', color: 'var(--muted)', marginBottom: '8px' }}>
-            💳 累计投入
+            💳 真实投入
           </div>
           <div style={{ fontSize: '1.8em', fontWeight: 'bold', color: '#42a5f5' }}>
-            {formatPrice(data.totalInvestment)}
+            {formatPrice(data.peakNetInvestment)}
           </div>
           <div style={{ fontSize: '0.8em', color: 'var(--muted)', marginTop: '4px' }}>
-            {data.totalBuyTrades} 笔买入交易
+            峰值本金（{data.totalBuyTrades} 笔买入）
           </div>
         </div>
 
@@ -239,10 +240,10 @@ export function InvestmentPool() {
             {profitIcon} 总收益
           </div>
           <div style={{ fontSize: '1.8em', fontWeight: 'bold', color: profitColor }}>
-            {formatPrice(data.absoluteProfit)}
+            {formatPrice(data.totalProfit)}
           </div>
           <div style={{ fontSize: '0.8em', color: profitColor, marginTop: '4px' }}>
-            {formatPercent(data.returnRate)}
+            {formatPercent(data.realReturnRate)}
           </div>
         </div>
 
@@ -274,7 +275,7 @@ export function InvestmentPool() {
         border: '1px solid rgba(255, 255, 255, 0.1)'
       }}>
         <h4 style={{ margin: '0 0 16px 0', color: 'var(--text)' }}>
-          🏦 资金池概览
+          🏦 资金池详细数据
         </h4>
         
         <div style={{
@@ -284,19 +285,25 @@ export function InvestmentPool() {
         }}>
           <div>
             <div style={{ fontSize: '0.9em', color: 'var(--muted)', marginBottom: '4px' }}>
-              持仓成本
+              净现金流
             </div>
-            <div style={{ fontSize: '1.3em', fontWeight: 'bold', color: '#ff9800' }}>
-              {formatPrice(data.currentCost)}
+            <div style={{ fontSize: '1.3em', fontWeight: 'bold', color: parseFloat(data.netCashFlow) >= 0 ? '#ff9800' : '#4caf50' }}>
+              {formatPrice(data.netCashFlow)}
+            </div>
+            <div style={{ fontSize: '0.75em', color: 'var(--muted)', marginTop: '2px' }}>
+              {parseFloat(data.netCashFlow) >= 0 ? '资金在池中' : '已提取盈利'}
             </div>
           </div>
           
           <div>
             <div style={{ fontSize: '0.9em', color: 'var(--muted)', marginBottom: '4px' }}>
-              静态成本
+              已实现盈利
             </div>
-            <div style={{ fontSize: '1.3em', fontWeight: 'bold', color: '#ff5722' }}>
-              {formatPrice(data.staticCost)}
+            <div style={{ fontSize: '1.3em', fontWeight: 'bold', color: parseFloat(data.realizedProfit) >= 0 ? '#4caf50' : '#f44336' }}>
+              {formatPrice(data.realizedProfit)}
+            </div>
+            <div style={{ fontSize: '0.75em', color: 'var(--muted)', marginTop: '2px' }}>
+              已卖出部分
             </div>
           </div>
           
@@ -307,6 +314,9 @@ export function InvestmentPool() {
             <div style={{ fontSize: '1.3em', fontWeight: 'bold', color: '#2196f3' }}>
               {formatPrice(data.totalValue)}
             </div>
+            <div style={{ fontSize: '0.75em', color: 'var(--muted)', marginTop: '2px' }}>
+              回收 + 持仓
+            </div>
           </div>
           
           <div>
@@ -316,6 +326,9 @@ export function InvestmentPool() {
             <div style={{ fontSize: '1.3em', fontWeight: 'bold', color: '#9c27b0' }}>
               {data.totalInvestmentDays} 天
             </div>
+            <div style={{ fontSize: '0.75em', color: 'var(--muted)', marginTop: '2px' }}>
+              持续投资中
+            </div>
           </div>
           
           <div>
@@ -324,6 +337,9 @@ export function InvestmentPool() {
             </div>
             <div style={{ fontSize: '1.3em', fontWeight: 'bold', color: '#607d8b' }}>
               {data.totalItems} 种
+            </div>
+            <div style={{ fontSize: '0.75em', color: 'var(--muted)', marginTop: '2px' }}>
+              当前持有 {data.currentHoldingItems} 种
             </div>
           </div>
         </div>
@@ -390,8 +406,12 @@ export function InvestmentPool() {
               </div>
               <div>
                 在过去 {data.totalInvestmentDays} 天里，您通过 {data.totalBuyTrades + data.totalSellTrades} 笔交易，
-                将 {formatPrice(data.totalInvestment)} 的投入转化为 {formatPrice(data.totalValue)} 的总价值，
-                实现了 {formatPrice(data.absoluteProfit)} 的收益（{formatPercent(data.returnRate)}）。
+                使用 {formatPrice(data.peakNetInvestment)} 的真实本金，
+                实现了 {formatPrice(data.totalProfit)} 的总收益（收益率 {formatPercent(data.realReturnRate)}）。
+              </div>
+              <div style={{ marginTop: '8px', fontSize: '0.9em', color: 'var(--muted)' }}>
+                其中已实现盈利 {formatPrice(data.realizedProfit)}，当前持仓价值 {formatPrice(data.currentHoldingValue)}，
+                累计回收资金 {formatPrice(data.totalWithdrawal)}。
               </div>
             </div>
           ) : (
@@ -400,7 +420,8 @@ export function InvestmentPool() {
                 ⚠️ <strong>当前处于亏损状态</strong>
               </div>
               <div>
-                当前亏损 {formatPrice(Math.abs(parseFloat(data.absoluteProfit)))}，
+                使用 {formatPrice(data.peakNetInvestment)} 的本金投资，
+                当前亏损 {formatPrice(Math.abs(parseFloat(data.totalProfit)))} （{formatPercent(data.realReturnRate)}），
                 建议重新评估投资策略或等待市场回暖。
               </div>
             </div>

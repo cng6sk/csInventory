@@ -151,4 +151,34 @@ public class TradeService {
                     .build();
         }).toList();
     }
+
+    /**
+     * 删除交易记录并回滚库存变更
+     */
+    @Transactional
+    public void deleteTrade(Long tradeId) {
+        // 查找交易记录
+        Trade trade = tradeRepository.findById(tradeId)
+                .orElseThrow(() -> new IllegalArgumentException("交易记录不存在，ID: " + tradeId));
+
+        log.info("准备删除交易记录，ID: {}, nameId: {}, 类型: {}, 数量: {}, 单价: {}", 
+                trade.getId(), trade.getNameId(), trade.getType(), 
+                trade.getQuantity(), trade.getUnitPrice());
+
+        // 回滚库存变更
+        try {
+            if (trade.getType() == Trade.Type.BUY) {
+                inventoryService.rollbackBuyTrade(trade);
+            } else {
+                inventoryService.rollbackSellTrade(trade);
+            }
+        } catch (Exception e) {
+            log.error("回滚库存失败，交易ID: {}", trade.getId(), e);
+            throw new RuntimeException("回滚库存失败: " + e.getMessage(), e);
+        }
+
+        // 删除交易记录
+        tradeRepository.delete(trade);
+        log.info("成功删除交易记录，ID: {}", tradeId);
+    }
 }

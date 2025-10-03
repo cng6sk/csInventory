@@ -183,4 +183,93 @@ public class InventoryService {
                 .map(Inventory::getCurrentQuantity)
                 .orElse(0);
     }
+
+    /**
+     * 回滚买入交易 - 撤回交易时使用
+     */
+    @Transactional
+    public void rollbackBuyTrade(Trade trade) {
+        if (trade.getType() != Trade.Type.BUY) {
+            throw new IllegalArgumentException("只能回滚买入交易");
+        }
+
+        Inventory inventory = inventoryRepository.findByNameId(trade.getNameId())
+                .orElseThrow(() -> new IllegalStateException("找不到对应的库存记录，无法回滚"));
+
+        int oldQuantity = inventory.getCurrentQuantity();
+        int newQuantity = oldQuantity - trade.getQuantity();
+
+        if (newQuantity < 0) {
+            throw new IllegalStateException(
+                String.format("无法回滚，库存数量不足。当前持有: %d，尝试回滚: %d", oldQuantity, trade.getQuantity())
+            );
+        }
+
+        if (newQuantity == 0) {
+            // 回滚后数量为0，删除库存记录
+            log.info("回滚买入交易后数量为0，删除库存记录，nameId: {}", trade.getNameId());
+            inventoryRepository.delete(inventory);
+        } else {
+            // 回滚后还有剩余，需要重新计算加权平均成本
+            BigDecimal oldTotalCost = inventory.getTotalInvestmentCost();
+            BigDecimal newTotalCost = oldTotalCost.subtract(trade.getTotalAmount());
+            
+            if (newTotalCost.compareTo(BigDecimal.ZERO) < 0) {
+                throw new IllegalStateException("回滚后总成本为负，数据异常");
+            }
+
+            BigDecimal newWeightedAverageCost = newTotalCost.divide(
+                    BigDecimal.valueOf(newQuantity), 4, RoundingMode.HALF_UP);
+
+            inventory.setCurrentQuantity(newQuantity);
+            inventory.setWeightedAverageCost(newWeightedAverageCost);
+            inventory.setTotalInvestmentCost(newTotalCost);
+
+            log.info("回滚买入交易，nameId: {}, 数量: {} -> {}, 平均成本: {}", 
+                    trade.getNameId(), oldQuantity, newQuantity, newWeightedAverageCost);
+
+            inventoryRepository.save(inventory);
+        }
+    }
+
+    /**
+     * 回滚卖出交易 - 撤回交易时使用
+     */
+    @Transactional
+    public void rollbackSellTrade(Trade trade) {
+        if (trade.getType() != Trade.Type.SELL) {
+            throw new IllegalArgumentException("只能回滚卖出交易");
+        }
+
+        Optional<Inventory> existingInventory = inventoryRepository.findByNameId(trade.getNameId());
+        
+        if (existingInventory.isPresent()) {
+            // 库存记录存在，增加数量和成本
+            Inventory inventory = existingInventory.get();
+            int oldQuantity = inventory.getCurrentQuantity();
+            int newQuantity = oldQuantity + trade.getQuantity();
+            
+            // 恢复卖出的成本（按之前的加权平均成本计算）
+            BigDecimal restoredCost = inventory.getWeightedAverageCost()
+                    .multiply(BigDecimal.valueOf(trade.getQuantity()));
+            BigDecimal newTotalCost = inventory.getTotalInvestmentCost().add(restoredCost);
+
+            inventory.setCurrentQuantity(newQuantity);
+            inventory.setTotalInvestmentCost(newTotalCost);
+            // 加权平均成本保持不变
+
+            log.info("回滚卖出交易，nameId: {}, 数量: {} -> {}, 恢复成本: {}", 
+                    trade.getNameId(), oldQuantity, newQuantity, restoredCost);
+
+            inventoryRepository.save(inventory);
+        } else {
+            // 库存记录不存在（可能已经全部卖出），需要重新创建
+            // 使用加权平均成本作为恢复的成本基础
+            // 这种情况比较复杂，因为我们不知道原来的加权平均成本
+            // 暂时抛出异常，要求手动处理
+            throw new IllegalStateException(
+                "无法自动回滚已全部清空的库存，请手动重新录入买入交易"
+            );
+        }
+    }
 } 

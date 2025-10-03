@@ -145,6 +145,15 @@ public class TradeController {
         return tradeService.getTradesByDateRangeWithItem(start, end);
     }
 
+    @DeleteMapping("/trades/{tradeId}")
+    public Map<String, Object> deleteTrade(@PathVariable Long tradeId) {
+        tradeService.deleteTrade(tradeId);
+        return Map.of(
+                "success", true,
+                "message", "交易记录已成功删除，库存已回滚"
+        );
+    }
+
     // ==================== 库存管理接口 ====================
 
     @GetMapping("/inventory")

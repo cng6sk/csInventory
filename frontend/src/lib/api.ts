@@ -51,17 +51,26 @@ export interface SellRequest {
 }
 
 export interface InvestmentPoolDTO {
-  // 资金流统计
-  totalInvestment: string;     // 累计投入资金
+  // 资金流统计（旧版，保留兼容）
+  totalInvestment: string;     // 累计投入资金（已废弃）
   totalWithdrawal: string;     // 累计回收资金
-  currentCost: string;         // 当前持仓成本
+  currentCost: string;         // 当前持仓成本（已废弃）
   staticCost: string;          // 静态成本
   currentHoldingValue: string; // 当前持仓估值
   
-  // 收益统计
-  absoluteProfit: string;      // 绝对收益
-  returnRate: string;          // 收益率
+  // 新增：真实投资统计
+  peakNetInvestment: string;   // 峰值净投入（真实本金）
+  netCashFlow: string;         // 净现金流
+  realizedProfit: string;      // 已实现盈利
+  
+  // 收益统计（旧版，保留兼容）
+  absoluteProfit: string;      // 绝对收益（已废弃）
+  returnRate: string;          // 收益率（已废弃）
   totalValue: string;          // 总价值
+  
+  // 新增：真实收益统计
+  totalProfit: string;         // 总盈利
+  realReturnRate: string;      // 真实收益率
   
   // 时间统计
   firstInvestmentDate: string; // 首次投资日期
@@ -139,6 +148,9 @@ export const api = {
   getTradeHistory: (nameId: number) => request<Trade[]>(`/api/trades/history/${nameId}`),
   getTradesByDateRange: (start: string, end: string) => 
     request<Trade[]>(`/api/trades/date-range?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`),
+  deleteTrade: (tradeId: number) => request<{success: boolean, message: string}>(`/api/trades/${tradeId}`, {
+    method: 'DELETE',
+  }),
 
   // ==================== 库存管理接口 ====================
   getAllInventory: () => request<Inventory[]>('/api/inventory'),
